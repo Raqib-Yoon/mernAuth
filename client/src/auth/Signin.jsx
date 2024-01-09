@@ -63,7 +63,7 @@ const Signin = () => {
           if (res.data.user.role === "admin") {
             navigate("/admin");
           } else if (res.data.user.role === "subscriber") {
-            navigate("/about");
+            navigate("/user");
           }
         });
       })
