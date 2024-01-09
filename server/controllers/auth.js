@@ -1,7 +1,6 @@
 const User = require("../models/user");
 const sgMail = require("@sendgrid/mail");
-const JWT = require("jsonwebtoken");
-const { expressJwt: jwt } = require("express-JWT");
+const jwt = require("jsonwebtoken");
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
@@ -18,7 +17,7 @@ exports.signup = async (req, res) => {
     });
   }
 
-  const token = await JWT.sign(
+  const token = await jwt.sign(
     { name, email, password },
     process.env.JWT_ACCOUNT_ACTIVATION
   );
@@ -67,7 +66,7 @@ exports.accountActivation = async (req, res) => {
     if (token) {
       // verify the token
 
-      const isTokenVerify = await JWT.verify(
+      const isTokenVerify = await jwt.verify(
         token,
         process.env.JWT_ACCOUNT_ACTIVATION
       );
@@ -82,7 +81,7 @@ exports.accountActivation = async (req, res) => {
 
       // decode name email and password from the token
 
-      const { name, email, password } = JWT.decode(token);
+      const { name, email, password } = jwt.decode(token);
 
       // now save user in the database
 
@@ -131,7 +130,7 @@ exports.signin = async (req, res) => {
   } else {
     // generate a token and send to client
 
-    const token = JWT.sign({ _id: user._id }, process.env.JWT_SECRET);
+    const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
 
     let { _id, name, email, role } = user;
 
@@ -156,7 +155,7 @@ exports.requiredSignin = async (req, res, next) => {
 
   try {
     // verify the token if it is a valid token
-    const verifyToken = JWT.verify(token, process.env.JWT_SECRET);
+    const verifyToken = jwt.verify(token, process.env.JWT_SECRET);
 
     const user = await User.findById(verifyToken._id).select({
       hashed_password: 0,
@@ -174,7 +173,6 @@ exports.requiredSignin = async (req, res, next) => {
   }
 };
 
-
 // middleware for checking if this user is admin
 
 exports.adminMiddleware = async (req, res, next) => {
@@ -191,6 +189,51 @@ exports.adminMiddleware = async (req, res, next) => {
   } catch (error) {
     return res.status(400).json({
       error: "user not found.",
+    });
+  }
+};
+
+exports.forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  // check if user entered a valid email
+
+  if (!email) {
+    return res.status(400).json({
+      error: "Must be a valid email.",
+    });
+  }
+  //
+
+  try {
+    const user = await User.findOne(email);
+
+    const token = jwt.sign(user._id, process.env.JWT_RESET_PASSWORD);
+
+    const msg = {
+      from: "raqibyoon2020@gmail.com",
+      to: email,
+      subject: "Reset password link",
+      html: `
+      <p>Please use the following link to activate your account</p>
+      <p>${process.env.CLIENT_URL}/auth/password/reset/${token}</p>
+      <hr/>
+  
+      <p>This email contain sensetive information</p>
+      <p>${process.env.CLIENT_URL}</p>
+      `,
+    };
+
+    const response = await sgMail.send(msg);
+
+    console.log(`THis is email response ${response}`);
+
+    res.status(200).json({
+      message: `Email has been sent to ${email} follow the instruction to activate your account.`,
+    });
+  } catch (error) {
+    res.status(400).json({
+      error: error.message,
     });
   }
 };
