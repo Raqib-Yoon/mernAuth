@@ -39,7 +39,7 @@ function Copyright(props) {
 
 const defaultTheme = createTheme();
 
-const Admin = () => {
+const User = () => {
   const [values, setValues] = React.useState({
     name: "",
     password: "",
@@ -79,7 +79,7 @@ const Admin = () => {
     // Send Data to the backend
     axios
       .put(
-        `http://localhost:8000/api/admin/update`,
+        `http://localhost:8000/api/user/update`,
         { name, password, role },
         {
           headers: {
@@ -131,7 +131,7 @@ const Admin = () => {
             <LockOutlinedIcon />
           </Avatar>
           <Typography component="h1" variant="h5">
-            Admin Update
+            User Update
           </Typography>
           <Box
             component="form"
@@ -200,4 +200,4 @@ const Admin = () => {
   );
 };
 
-export default Admin;
+export default User;

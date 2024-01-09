@@ -28,7 +28,6 @@ function navbar() {
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
-    
   };
 
   const handleCloseNavMenu = () => {
@@ -94,7 +93,7 @@ function navbar() {
               </NavLink>
             )}
             {isAuth() && isAuth().role === "subscriber" && (
-              <NavLink to={"/about"}>
+              <NavLink to={"/user"}>
                 <Button
                   onClick={handleCloseNavMenu}
                   sx={{ my: 2, color: "white", display: "block" }}
@@ -103,14 +102,7 @@ function navbar() {
                 </Button>
               </NavLink>
             )}
-            <Link to={"/about"}>
-              <Button
-                onClick={handleCloseNavMenu}
-                sx={{ my: 2, color: "white", display: "block" }}
-              >
-                About
-              </Button>
-            </Link>
+
             {!isAuth() && (
               <>
                 <NavLink to={"/signin"}>

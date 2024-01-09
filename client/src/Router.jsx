@@ -7,8 +7,8 @@ import App from "./App";
 import Activate from "./auth/Activate";
 import Protected from "./auth/Protected";
 import ProtectAdmin from "./auth/ProtectAdmin.jsx";
-import About from "./core/About.jsx";
-import Admin from "./core/Admin.jsx"
+import User from "./core/User";
+import Admin from "./core/Admin.jsx";
 const Router = ({ children }) => {
   return (
     <>
@@ -19,7 +19,7 @@ const Router = ({ children }) => {
           <Route path="/signup" element={<Signup />} />
           <Route path="/signin" element={<Signin />} />
           <Route path="/auth/activate/:token" element={<Activate />} />
-          <Route path="/about" element={<Protected Component={About} />} />
+          <Route path="/user" element={<Protected Component={User} />} />
           <Route path="/admin" element={<ProtectAdmin Admin={Admin} />} />
         </Routes>
       </BrowserRouter>

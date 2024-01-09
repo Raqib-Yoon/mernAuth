@@ -131,7 +131,7 @@ exports.signin = async (req, res) => {
   } else {
     // generate a token and send to client
 
-    const token = JWT.sign({ _id: User._id }, process.env.JWT_SECRET);
+    const token = JWT.sign({ _id: user._id }, process.env.JWT_SECRET);
 
     let { _id, name, email, role } = user;
 
@@ -147,7 +147,50 @@ exports.signin = async (req, res) => {
   }
 };
 
-exports.requiredSignin = jwt({
-  secret: process.env.JWT_SECRET,
-  algorithms: ["HS256"],
-});
+// middleware for user verifing
+
+exports.requiredSignin = async (req, res, next) => {
+  // get token that is sended from the frontend
+
+  const token = req.headers["token"];
+
+  try {
+    // verify the token if it is a valid token
+    const verifyToken = JWT.verify(token, process.env.JWT_SECRET);
+
+    const user = await User.findById(verifyToken._id).select({
+      hashed_password: 0,
+      salt: 0,
+    });
+
+    req.user = user;
+    req.userId = user.id;
+
+    next();
+  } catch (error) {
+    return res.status(400).json({
+      error: "user not found from required signin.",
+    });
+  }
+};
+
+
+// middleware for checking if this user is admin
+
+exports.adminMiddleware = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (user.role !== "admin") {
+      return res.status(400).json({
+        error: "your not admin. access denied",
+      });
+    }
+
+    req.profile = user;
+    next();
+  } catch (error) {
+    return res.status(400).json({
+      error: "user not found.",
+    });
+  }
+};
