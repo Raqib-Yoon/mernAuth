@@ -193,6 +193,11 @@ exports.adminMiddleware = async (req, res, next) => {
   }
 };
 
+//
+//
+//
+// forgot password
+
 exports.forgotPassword = async (req, res) => {
   const { email } = req.body;
 
@@ -206,9 +211,13 @@ exports.forgotPassword = async (req, res) => {
   //
 
   try {
-    const user = await User.findOne(email);
+    const user = await User.findOne({ email });
 
-    const token = jwt.sign(user._id, process.env.JWT_RESET_PASSWORD);
+    const token = jwt.sign({ id: user._id }, process.env.JWT_RESET_PASSWORD);
+
+    console.log(user._id);
+
+    console.log(token);
 
     const msg = {
       from: "raqibyoon2020@gmail.com",
@@ -224,16 +233,57 @@ exports.forgotPassword = async (req, res) => {
       `,
     };
 
-    const response = await sgMail.send(msg);
+    await sgMail
+      .send(msg)
+      .then((res) => {
+        res.status(200).json({
+          message: `Email has been sent to ${email} follow the instruction to activate your account.`,
+        });
+      })
+      .catch((err) => {
+        // console.log(err);
+        return res.status(400).json({
+          error: "Something went wrong email not send.",
+        });
+      });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({
+      error: "User with this email not found.",
+    });
+  }
+};
 
-    console.log(`THis is email response ${response}`);
+// reset password function
 
-    res.status(200).json({
-      message: `Email has been sent to ${email} follow the instruction to activate your account.`,
+exports.resetPassword = async (req, res) => {
+  const { token, newPassword } = req.body;
+
+  if (!token) {
+    return res.status(400).json({
+      error: "Token is expired.",
+    });
+  }
+
+  if (!newPassword || newPassword.length < 6) {
+    return res.status(400).json({
+      error: "password must be at least 6 character long.",
+    });
+  }
+  try {
+    const { id } = jwt.verify(token, process.env.JWT_RESET_PASSWORD);
+
+    const user = await User.findById(id);
+
+    user.password = newPassword;
+    user.save();
+
+    return res.json({
+      message: "Greate ❤! new password successfully created.",
     });
   } catch (error) {
-    res.status(400).json({
-      error: error.message,
+    return res.status(400).json({
+      error: "Invalid token. Please try again"
     });
   }
 };
