@@ -135,9 +135,13 @@ const Signin = () => {
             </Button>
             <Grid container>
               <Grid item xs>
-                <Link to="/signin" variant="body2">
+                <NavLink
+                  to="/password/forgot"
+                  variant="body2"
+                  style={{ cursor: "pointer",  }}
+                >
                   Forgot password?
-                </Link>
+                </NavLink>
               </Grid>
               <Grid item>
                 <NavLink to="/signup" variant="body2">
